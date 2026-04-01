@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FormSecure — Cadastro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --c-bg:          #03070f;
+      --c-surface:     #080f1e;
+      --c-surface-2:   #0d1730;
+      --c-border:      #1a2a4a;
+      --c-border-focus:#2d5be3;
+      --c-blue-1:      #1a3bbd;
+      --c-blue-2:      #2d5be3;
+      --c-blue-3:      #4c7fff;
+      --c-blue-4:      #6e9eff;
+      --c-blue-5:      #a8c8ff;
+      --c-accent:      #00d4ff;
+      --c-text:        #e8f0ff;
+      --c-text-muted:  #7a9ac8;
+      --c-error:       #ff4d6d;
+      --c-success:     #00e5a0;
+      --c-warning:     #ffb800;
+      --radius:        12px;
+      --radius-lg:     20px;
+      --shadow:        0 8px 40px rgba(0,0,0,.6);
+      --transition:    .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Fundo animado */
+    .bg-mesh {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bg-mesh::before {
+      content: ''; position: absolute;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(45,91,227,.22) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      animation: blob1 18s ease-in-out infinite alternate;
+    }
+    .bg-mesh::after {
+      content: ''; position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,212,255,.14) 0%, transparent 70%);
+      bottom: -150px; right: -150px;
+      animation: blob2 22s ease-in-out infinite alternate;
+    }
+    @keyframes blob1 {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(120px,80px) scale(1.2); }
+    }
+    @keyframes blob2 {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(-100px,-60px) scale(1.15); }
+    }
+    .grid-lines {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(45,91,227,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(45,91,227,.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Layout */
+    .pagina {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+      min-height: 100vh;
+    }
+
+    /* Cabeçalho */
+    .cabecalho {
+      text-align: center; margin-bottom: 48px;
+      animation: fadeDown .7s ease both;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(45,91,227,.15);
+      border: 1px solid rgba(45,91,227,.35);
+      color: var(--c-blue-4);
+      font-family: 'Syne', sans-serif;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      padding: 6px 16px; border-radius: 100px; margin-bottom: 20px;
+    }
+    .badge::before {
+      content: ''; width: 6px; height: 6px;
+      background: var(--c-accent); border-radius: 50%;
+      animation: pulsar 1.8s ease-in-out infinite;
+    }
+    @keyframes pulsar {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .4; transform: scale(1.4); }
+    }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800; line-height: 1.1; letter-spacing: -.02em;
+      background: linear-gradient(135deg, var(--c-text) 30%, var(--c-blue-4) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .subtitulo { margin-top: 12px; color: var(--c-text-muted); font-size: 15px; font-weight: 300; }
+
+    /* Card */
+    .card {
+      width: 100%; max-width: 500px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      padding: 40px; box-shadow: var(--shadow);
+      animation: fadeUp .8s ease both .15s;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--c-blue-2), var(--c-accent), var(--c-blue-2), transparent);
+      animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -500px 0; }
+      100% { background-position:  500px 0; }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Campos */
+    .campo { margin-bottom: 24px; position: relative; }
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--c-text-muted); margin-bottom: 8px;
+      transition: color var(--transition);
+    }
+    .campo:focus-within label { color: var(--c-blue-4); }
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .icone-input {
+      position: absolute; left: 14px;
+      width: 18px; height: 18px;
+      color: var(--c-text-muted); pointer-events: none;
+      transition: color var(--transition); flex-shrink: 0;
+    }
+    .campo:focus-within .icone-input { color: var(--c-blue-3); }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      background: var(--c-surface-2);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius);
+      color: var(--c-text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 13px 44px 13px 42px;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      -webkit-appearance: none;
+    }
+    textarea {
+      resize: vertical; min-height: 110px;
+      padding: 13px 14px 13px 42px; line-height: 1.55;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--c-border-focus);
+      background: rgba(13,23,48,.9);
+      box-shadow: 0 0 0 3px rgba(45,91,227,.18);
+    }
+    input.invalido, textarea.invalido {
+      border-color: var(--c-error) !important;
+      box-shadow: 0 0 0 3px rgba(255,77,109,.15) !important;
+    }
+    input.valido, textarea.valido {
+      border-color: var(--c-success) !important;
+    }
+
+    .alternar-senha {
+      position: absolute; right: 14px;
+      background: none; border: none; cursor: pointer;
+      color: var(--c-text-muted);
+      display: flex; align-items: center; padding: 4px;
+      transition: color var(--transition);
+    }
+    .alternar-senha:hover { color: var(--c-blue-4); }
+
+    .contador-chars {
+      position: absolute; bottom: 10px; right: 12px;
+      font-size: 11px; color: var(--c-text-muted);
+      pointer-events: none; transition: color var(--transition);
+      font-variant-numeric: tabular-nums;
+    }
+    .contador-chars.aviso { color: var(--c-warning); }
+    .contador-chars.limite { color: var(--c-error); }
+
+    .erro-campo {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 7px; font-size: 12.5px;
+      color: var(--c-error); min-height: 18px;
+      animation: deslizar .2s ease;
+    }
+    @keyframes deslizar {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Força da senha */
+    .forca-wrap { margin-top: 10px; }
+    .forca-barra {
+      height: 4px; border-radius: 4px;
+      background: var(--c-surface-2); overflow: hidden; margin-bottom: 5px;
+    }
+    .forca-fill {
+      height: 100%; border-radius: 4px; width: 0%;
+      transition: width .4s ease, background .4s ease;
+    }
+    .forca-label { font-size: 11.5px; color: var(--c-text-muted); }
+
+    /* Botão enviar */
+    .btn-enviar {
+      width: 100%; margin-top: 8px; padding: 15px;
+      background: linear-gradient(135deg, var(--c-blue-1), var(--c-blue-2));
+      border: 1px solid var(--c-blue-2); border-radius: var(--radius);
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700; letter-spacing: .04em;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .btn-enviar::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), transparent);
+      opacity: 0; transition: opacity .2s;
+    }
+    .btn-enviar:hover:not(:disabled)::before { opacity: 1; }
+    .btn-enviar:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(45,91,227,.45);
+    }
+    .btn-enviar:active:not(:disabled) { transform: translateY(0); }
+    .btn-enviar:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-enviar .spinner {
+      display: none; width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: girar .7s linear infinite; margin: 0 auto;
+    }
+    .btn-enviar.carregando .texto-btn { display: none; }
+    .btn-enviar.carregando .spinner  { display: block; }
+    @keyframes girar { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    #toast {
+      position: fixed; top: 24px; right: 24px;
+      max-width: 360px; padding: 14px 20px;
+      border-radius: var(--radius); font-size: 14px; font-weight: 500;
+      display: flex; align-items: flex-start; gap: 10px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.5);
+      z-index: 1000;
+      transform: translateX(110%);
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s ease;
+      opacity: 0;
+    }
+    #toast.visivel { transform: translateX(0); opacity: 1; }
+    #toast.sucesso { background: rgba(0,229,160,.12); border: 1px solid rgba(0,229,160,.35); color: var(--c-success); }
+    #toast.erro    { background: rgba(255,77,109,.1);  border: 1px solid rgba(255,77,109,.3);  color: var(--c-error); }
+    #toast.info    { background: rgba(45,91,227,.15);  border: 1px solid rgba(45,91,227,.3);   color: var(--c-blue-4); }
+
+    /* Overlay de sucesso */
+    .overlay-sucesso {
+      display: none; flex-direction: column;
+      align-items: center; text-align: center;
+      padding: 20px 0; animation: fadeUp .5s ease;
+    }
+    .overlay-sucesso.visivel { display: flex; }
+    .icone-sucesso {
+      width: 72px; height: 72px;
+      background: rgba(0,229,160,.12);
+      border: 2px solid var(--c-success); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      animation: escalar .5s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes escalar {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .titulo-sucesso {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem; font-weight: 700; color: var(--c-success); margin-bottom: 8px;
+    }
+    .sub-sucesso { color: var(--c-text-muted); font-size: 14px; }
+    .btn-novo {
+      margin-top: 28px; padding: 11px 28px;
+      background: transparent;
+      border: 1px solid var(--c-border-focus); border-radius: var(--radius);
+      color: var(--c-blue-4);
+      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background var(--transition), color var(--transition);
+    }
+    .btn-novo:hover { background: rgba(45,91,227,.15); color: var(--c-text); }
+
+    /* =====================================================================
+       Seção da tabela
+    ===================================================================== */
+    .secao-tabela {
+      width: 100%; max-width: 960px; margin-top: 56px;
+      animation: fadeUp .9s ease both .3s;
+    }
+
+    .titulo-tabela {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--c-text); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .titulo-tabela span {
+      background: rgba(45,91,227,.2);
+      border: 1px solid rgba(45,91,227,.35);
+      color: var(--c-blue-4);
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 100px;
+    }
+
+    .tabela-wrap {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden; box-shadow: var(--shadow);
+      position: relative;
+    }
+    .tabela-wrap::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--c-blue-2), var(--c-accent), var(--c-blue-2), transparent);
+    }
+
+    .tabela-scroll { overflow-x: auto; }
+
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    thead tr {
+      background: var(--c-surface-2);
+      border-bottom: 1px solid var(--c-border);
+    }
+    thead th {
+      padding: 14px 18px; text-align: left;
+      font-family: 'Syne', sans-serif;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--c-text-muted); white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(26,42,74,.6);
+      transition: background var(--transition);
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(45,91,227,.06); }
+    tbody td {
+      padding: 14px 18px; color: var(--c-text);
+      vertical-align: middle;
+    }
+    tbody td.email { color: var(--c-blue-4); font-size: 13px; }
+    tbody td.mensagem {
+      max-width: 240px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: var(--c-text-muted);
+    }
+    tbody td.data { color: var(--c-text-muted); font-size: 12px; white-space: nowrap; }
+
+    /* badge ID */
+    .badge-id {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 8px;
+      background: rgba(45,91,227,.15); border: 1px solid rgba(45,91,227,.3);
+      color: var(--c-blue-4); font-family: 'Syne', sans-serif;
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* estado vazio */
+    .tabela-vazia {
+      padding: 48px 20px; text-align: center;
+      color: var(--c-text-muted); font-size: 14px;
+    }
+    .tabela-vazia svg { margin-bottom: 12px; opacity: .4; }
+
+    /* loading da tabela */
+    .tabela-loading {
+      padding: 40px; display: flex; align-items: center;
+      justify-content: center; gap: 12px;
+      color: var(--c-text-muted); font-size: 14px;
+    }
+    .tabela-loading .spinner-tabela {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(45,91,227,.2);
+      border-top-color: var(--c-blue-3);
+      border-radius: 50%;
+      animation: girar .7s linear infinite;
+    }
+
+    /* Rodapé */
+    .rodape {
+      margin-top: 48px; text-align: center;
+      color: var(--c-text-muted); font-size: 12px;
+      animation: fadeUp .9s ease both .4s;
+    }
+
+    @media (max-width: 540px) {
+      .card { padding: 28px 20px; }
+      .secao-tabela { margin-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="grid-lines"></div>
+
+<div id="toast" role="alert" aria-live="polite"></div>
+
+<main class="pagina">
+
+  <!-- Cabeçalho -->
+  <header class="cabecalho">
+    <div class="badge">Cadastro Seguro</div>
+    <h1>Crie sua conta</h1>
+    <p class="subtitulo">Todos os campos são obrigatórios e validados.</p>
+  </header>
+
+  <!-- Card do formulário -->
+  <div class="card">
+
+    <!-- Overlay de sucesso -->
+    <div class="overlay-sucesso" id="overlaySucesso">
+      <div class="icone-sucesso">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+             stroke="var(--c-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <p class="titulo-sucesso">Cadastro realizado!</p>
+      <p class="sub-sucesso">Sua conta foi criada com sucesso.</p>
+      <button class="btn-novo" onclick="resetarFormulario()">Cadastrar outro</button>
+    </div>
+
+    <!-- Formulário -->
+    <form id="formCadastro" novalidate autocomplete="off">
+
+      <!-- Nome -->
+      <div class="campo">
+        <label for="nome">Nome completo</label>
+        <div class="input-wrap">
+          <svg class="icone-input" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <input type="text" id="nome" name="nome" placeholder="João Silva"
+                 maxlength="100" autocomplete="off" />
+        </div>
+        <div class="erro-campo" id="erroNome" aria-live="polite"></div>
+      </div>
+
+      <!-- E-mail -->
+      <div class="campo">
+        <label for="email">Endereço de e-mail</label>
+        <div class="input-wrap">
+          <svg class="icone-input" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          <input type="email" id="email" name="email" placeholder="joao@exemplo.com"
+                 maxlength="254" autocomplete="off" />
+        </div>
+        <div class="erro-campo" id="erroEmail" aria-live="polite"></div>
+      </div>
+
+      <!-- Senha -->
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <div class="input-wrap">
+          <svg class="icone-input" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input type="password" id="senha" name="senha"
+                 placeholder="Mín. 8 caracteres" maxlength="72" autocomplete="new-password" />
+          <button type="button" class="alternar-senha" id="alternarSenha" aria-label="Exibir ou ocultar senha">
+            <svg id="iconeOlho" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <div class="forca-wrap" id="forcaWrap" style="display:none">
+          <div class="forca-barra"><div class="forca-fill" id="forcaFill"></div></div>
+          <span class="forca-label" id="forcaLabel"></span>
+        </div>
+        <div class="erro-campo" id="erroSenha" aria-live="polite"></div>
+      </div>
+
+      <!-- Mensagem -->
+      <div class="campo">
+        <label for="mensagem">Mensagem</label>
+        <div class="input-wrap" style="align-items:flex-start">
+          <svg class="icone-input" style="top:14px;position:absolute;" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <textarea id="mensagem" name="mensagem" placeholder="Escreva sua mensagem…"
+                    maxlength="250" rows="4"></textarea>
+          <span class="contador-chars" id="contadorChars">0 / 250</span>
+        </div>
+        <div class="erro-campo" id="erroMensagem" aria-live="polite"></div>
+      </div>
+
+      <button type="submit" class="btn-enviar" id="btnEnviar">
+        <span class="texto-btn">Criar conta</span>
+        <div class="spinner"></div>
+      </button>
+
+    </form>
+  </div>
+
+  <!-- Seção da tabela -->
+  <section class="secao-tabela" id="secaoTabela" style="display:none">
+    <div class="titulo-tabela">
+      Usuários cadastrados
+      <span id="totalUsuarios">0 registros</span>
+    </div>
+    <div class="tabela-wrap">
+      <div class="tabela-scroll">
+        <div id="conteudoTabela">
+          <div class="tabela-loading">
+            <div class="spinner-tabela"></div>
+            Carregando registros…
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="rodape">
+    FormSecure &mdash; dados protegidos com bcrypt e prepared statements.
+  </footer>
+
+</main>
+
+<script>
+/* =========================================================================
+   Utilitários
+========================================================================= */
+const $ = id => document.getElementById(id);
+
+function definirErro(campoId, msg) {
+  const el    = $(campoId.replace('campo', 'erro').replace('nome','erroNome')
+                          .replace('email','erroEmail').replace('senha','erroSenha')
+                          .replace('mensagem','erroMensagem'));
+  const elErr = $('erro' + campoId.charAt(0).toUpperCase() + campoId.slice(1));
+  const input = $(campoId);
+
+  const errEl = elErr || el;
+  if (!errEl || !input) return;
+
+  if (msg) {
+    errEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${escaparHtml(msg)}`;
+    input.classList.add('invalido');
+    input.classList.remove('valido');
+  } else {
+    errEl.textContent = '';
+    input.classList.remove('invalido');
+  }
+}
+
+function definirValido(campoId) {
+  const input = $(campoId);
+  if (input) { input.classList.add('valido'); input.classList.remove('invalido'); }
+}
+
+function escaparHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* =========================================================================
+   Validadores (espelham as regras do backend)
+========================================================================= */
+function validarNome(v) {
+  if (!v.trim()) return 'O nome é obrigatório.';
+  if (v.trim().length < 2)   return 'O nome deve ter pelo menos 2 caracteres.';
+  if (v.trim().length > 100) return 'O nome não pode ultrapassar 100 caracteres.';
+  if (!/^[\p{L}\s'\-]+$/u.test(v.trim())) return 'O nome só pode conter letras, espaços, hífens e apóstrofos.';
+  return '';
+}
+
+function validarEmail(v) {
+  if (!v.trim()) return 'O e-mail é obrigatório.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim())) return 'Informe um e-mail válido (ex: usuario@exemplo.com).';
+  if (v.trim().length > 254) return 'O endereço de e-mail é longo demais.';
+  return '';
+}
+
+function validarSenha(v) {
+  if (!v) return 'A senha é obrigatória.';
+  if (v.length < 8)  return 'A senha deve ter pelo menos 8 caracteres.';
+  if (v.length > 72) return 'A senha não pode ultrapassar 72 caracteres.';
+  if (!/[A-Z]/.test(v)) return 'A senha deve conter pelo menos uma letra maiúscula.';
+  if (!/[a-z]/.test(v)) return 'A senha deve conter pelo menos uma letra minúscula.';
+  if (!/[0-9]/.test(v)) return 'A senha deve conter pelo menos um número.';
+  if (!/[\W_]/.test(v)) return 'A senha deve conter pelo menos um caractere especial.';
+  return '';
+}
+
+function validarMensagem(v) {
+  if (!v.trim()) return 'A mensagem é obrigatória.';
+  if (v.trim().length > 250) return 'A mensagem não pode ultrapassar 250 caracteres.';
+  return '';
+}
+
+/* =========================================================================
+   Força da senha
+========================================================================= */
+function calcularForca(v) {
+  let p = 0;
+  if (v.length >= 8)   p++;
+  if (v.length >= 12)  p++;
+  if (/[A-Z]/.test(v)) p++;
+  if (/[a-z]/.test(v)) p++;
+  if (/[0-9]/.test(v)) p++;
+  if (/[\W_]/.test(v)) p++;
+  if (v.length >= 16)  p++;
+  return p;
+}
+
+const mapaForca = [
+  { label: 'Muito fraca',  cor: '#ff4d6d', pct: 10  },
+  { label: 'Fraca',        cor: '#ff7043', pct: 25  },
+  { label: 'Razoável',     cor: '#ffb800', pct: 45  },
+  { label: 'Boa',          cor: '#4fc3f7', pct: 65  },
+  { label: 'Forte',        cor: '#00b8d9', pct: 80  },
+  { label: 'Muito forte',  cor: '#00e5a0', pct: 100 },
+  { label: 'Excelente',    cor: '#00e5a0', pct: 100 },
+];
+
+$('senha').addEventListener('input', function () {
+  const v = this.value;
+  const wrap = $('forcaWrap');
+  if (!v) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const s   = Math.min(calcularForca(v), mapaForca.length - 1);
+  const map = mapaForca[s];
+  $('forcaFill').style.width      = map.pct + '%';
+  $('forcaFill').style.background = map.cor;
+  $('forcaLabel').style.color     = map.cor;
+  $('forcaLabel').textContent     = map.label;
+});
+
+/* =========================================================================
+   Contador de caracteres
+========================================================================= */
+$('mensagem').addEventListener('input', function () {
+  const len = this.value.length;
+  const el  = $('contadorChars');
+  el.textContent = len + ' / 250';
+  el.className = 'contador-chars' +
+    (len >= 250 ? ' limite' : len >= 200 ? ' aviso' : '');
+});
+
+/* =========================================================================
+   Validação inline no blur
+========================================================================= */
+$('nome').addEventListener('blur',     function () { const e = validarNome(this.value);     definirErro('nome', e);     if (!e) definirValido('nome'); });
+$('email').addEventListener('blur',    function () { const e = validarEmail(this.value);    definirErro('email', e);    if (!e) definirValido('email'); });
+$('senha').addEventListener('blur',    function () { const e = validarSenha(this.value);    definirErro('senha', e);    if (!e) definirValido('senha'); });
+$('mensagem').addEventListener('blur', function () { const e = validarMensagem(this.value); definirErro('mensagem', e); if (!e) definirValido('mensagem'); });
+
+/* =========================================================================
+   Alternar visibilidade da senha
+========================================================================= */
+$('alternarSenha').addEventListener('click', function () {
+  const inp = $('senha');
+  const mostrando = inp.type === 'text';
+  inp.type = mostrando ? 'password' : 'text';
+  $('iconeOlho').innerHTML = mostrando
+    ? `<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>`
+    : `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+});
+
+/* =========================================================================
+   Toast
+========================================================================= */
+let timerToast;
+function exibirToast(msg, tipo = 'info') {
+  const t = $('toast');
+  clearTimeout(timerToast);
+  t.className = '';
+  const icone = tipo === 'sucesso'
+    ? '<polyline points="20 6 9 17 4 12"/>'
+    : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+  t.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    ${icone}</svg><span>${escaparHtml(msg)}</span>`;
+  void t.offsetWidth;
+  t.classList.add(tipo, 'visivel');
+  timerToast = setTimeout(() => t.classList.remove('visivel'), 5000);
+}
+
+/* =========================================================================
+   Carregar tabela de usuários
+========================================================================= */
+async function carregarUsuarios() {
+  $('secaoTabela').style.display = 'block';
+  $('conteudoTabela').innerHTML = `
+    <div class="tabela-loading">
+      <div class="spinner-tabela"></div>
+      Carregando registros…
+    </div>`;
+
+  try {
+    const res  = await fetch('/PWEB/backend/listar.php');
+    const data = await res.json();
+
+    if (!data.sucesso) {
+      $('conteudoTabela').innerHTML = `<div class="tabela-vazia">Erro ao carregar registros.</div>`;
+      return;
+    }
+
+    const usuarios = data.usuarios || [];
+    $('totalUsuarios').textContent = usuarios.length + (usuarios.length === 1 ? ' registro' : ' registros');
+
+    if (usuarios.length === 0) {
+      $('conteudoTabela').innerHTML = `
+        <div class="tabela-vazia">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <p>Nenhum usuário cadastrado ainda.</p>
+        </div>`;
+      return;
+    }
+
+    const formatarData = iso => {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const linhas = usuarios.map(u => `
+      <tr>
+        <td><span class="badge-id">${u.id}</span></td>
+        <td>${u.nome}</td>
+        <td class="email">${u.email}</td>
+        <td class="mensagem" title="${u.mensagem}">${u.mensagem}</td>
+        <td class="data">${formatarData(u.cadastrado_em)}</td>
+      </tr>`).join('');
+
+    $('conteudoTabela').innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Mensagem</th>
+            <th>Cadastrado em</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>`;
+
+  } catch (e) {
+    $('conteudoTabela').innerHTML = `<div class="tabela-vazia">Erro de conexão ao carregar registros.</div>`;
+  }
+}
+
+/* =========================================================================
+   Envio do formulário
+========================================================================= */
+$('formCadastro').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const campos = {
+    nome:     validarNome($('nome').value),
+    email:    validarEmail($('email').value),
+    senha:    validarSenha($('senha').value),
+    mensagem: validarMensagem($('mensagem').value),
+  };
+
+  let temErro = false;
+  for (const [campo, err] of Object.entries(campos)) {
+    definirErro(campo, err);
+    if (err) { temErro = true; }
+    else      { definirValido(campo); }
+  }
+
+  if (temErro) {
+    exibirToast('Corrija os erros antes de enviar.', 'erro');
+    return;
+  }
+
+  const btn = $('btnEnviar');
+  btn.classList.add('carregando');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/PWEB/backend/submit.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome:     $('nome').value.trim(),
+        email:    $('email').value.trim(),
+        senha:    $('senha').value,
+        mensagem: $('mensagem').value.trim(),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.sucesso) {
+      $('formCadastro').style.display = 'none';
+      $('overlaySucesso').classList.add('visivel');
+      exibirToast('Cadastro realizado com sucesso!', 'sucesso');
+      carregarUsuarios();
+    } else {
+      const erros = data.erros || {};
+      let mostrou = false;
+      for (const [campo, msg] of Object.entries(erros)) {
+        if (['nome','email','senha','mensagem'].includes(campo)) {
+          definirErro(campo, msg);
+          mostrou = true;
+        }
+      }
+      if (erros.servidor) { exibirToast(erros.servidor, 'erro'); mostrou = true; }
+      if (!mostrou) exibirToast('Falha no envio. Tente novamente.', 'erro');
+    }
+  } catch (err) {
+    exibirToast('Erro de conexão. Verifique sua rede e tente novamente.', 'erro');
+  } finally {
+    btn.classList.remove('carregando');
+    btn.disabled = false;
+  }
+});
+
+/* =========================================================================
+   Resetar formulário
+========================================================================= */
+function resetarFormulario() {
+  $('formCadastro').reset();
+  $('formCadastro').style.display = '';
+  $('overlaySucesso').classList.remove('visivel');
+  ['nome','email','senha','mensagem'].forEach(f => {
+    const el = $(f);
+    el.classList.remove('valido','invalido');
+    $('erro' + f.charAt(0).toUpperCase() + f.slice(1)).textContent = '';
+  });
+  $('contadorChars').textContent = '0 / 250';
+  $('contadorChars').className = 'contador-chars';
+  $('forcaWrap').style.display = 'none';
+}
+</script>
+</body>
+</html>
